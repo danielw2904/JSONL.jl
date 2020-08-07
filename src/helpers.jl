@@ -16,15 +16,16 @@ function getfile(file, nlines, skip, usemmap)
     return ff
 end
 
-function detecteol(fi, cur)
-    cur = findnext(isequal(_EOL), fi, nextind(fi, cur))
-    return findnext(isequal(_LSEP), fi, cur)
-end
-
 function readstr(file)
     fi = read(file);
     out = split(String(fi), '\n', keepempty = false);
+    println(out)
     return out
+end
+
+function detecteol(fi, cur)
+    cur = findnext(isequal(_EOL), fi, nextind(fi, cur))
+    return findnext(isequal(_LSEP), fi, cur)
 end
 
 function mmapstr(file, nlines::Int, skip::Int)
