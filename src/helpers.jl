@@ -1,9 +1,6 @@
 const _LSEP = UInt8('\n')
 const _EOL = UInt8('}')
-const _BOL = UInt8('{')
-const _ESC = UInt8('\\') 
 const _INT_MAX = typemax(Int)
-const _SPLT = Sys.iswindows() ? "\r\n" : '\n'
 
 # Detect space in UInt8
 import Base: isspace
@@ -13,8 +10,8 @@ import Base: isspace
 # Choose loading method
 function getfile(file, nlines, skip, usemmap)
     if usemmap
-        nlines === nothing && (nlines = _INT_MAX)
-        skip === nothing && (skip = 0)
+        isnothing(nlines) && (nlines = _INT_MAX)
+        isnothing(skip) && (skip = 0)
         ff = mmapstr(file, nlines, skip)
     else
         nlines !== nothing || skip !== nothing && @warn "nlines and skip require mmap. Returning all lines."
@@ -26,16 +23,25 @@ end
 # Read everything into ram
 function readstr(file)
     fi = read(file);
-    out = split(String(fi), _SPLT, keepempty = false);
-    return out
+    splits = Int[]
+    start = firstindex(fi)
+    len = lastindex(fi)
+    push!(splits, start)
+    cur = detecteol(fi, start)
+    isnothing(cur) ? push!(splits, len) : push!(splits, cur)
+    while cur != len && !isnothing(cur) 
+        cur = detecteol(fi, cur)
+        isnothing(cur) ? push!(splits, len) : push!(splits, cur)
+    end
+    return splitfi(fi, splits)
 end
 
-# Mmap helpers
+# Line detection 
 function checkeol(fi, cur)
-    while isspace(fi[prevind(fi, cur)])
+    while isspace(@inbounds fi[prevind(fi, cur)])
         cur = prevind(fi, cur)
     end
-    return fi[prevind(fi, cur)] == _EOL
+    return @inbounds fi[prevind(fi, cur)] == _EOL
 end
 
 function detecteol(fi, cur)
@@ -51,51 +57,61 @@ function detecteol(fi, cur)
     end
 end
 
+# Line splitter
+function splitfi(fi, indices)
+    out = Vector{Vector{UInt8}}(undef, length(indices)-1)
+    @inbounds for line in 2:lastindex(indices)
+        out[line-1] = fi[indices[prevind(indices, line)]:indices[line]]
+    end
+    return out
+end
+
 # Mmap main
 function mmapstr(file, nlines::Int, skip::Int)
     @assert nlines > 0 "nlines must be positive"
+    splits = Int[]
     fi = Mmap.mmap(file);
-    len = length(fi)
-    skip > len && (return SubString{String}[])
+    len = lastindex(fi)
+    skip > len && (return Vector{UInt8}[])
     cur = detecteol(fi, firstindex(fi))
     if skip == 0
         start = firstindex(fi)
-        if cur == len || cur === nothing 
-            return SubString{String}[String(fi)]
+        if cur == len || isnothing(cur) 
+            return [fi]
         end
     elseif skip > 0
-        if cur == len || cur === nothing
-            return SubString{String}[]
+        if cur == len || isnothing(cur)
+            return Vector{UInt8}[]
         end
         for _ in 2:skip 
             cur = detecteol(fi, cur)
-            if cur == len || cur === nothing 
-                return SubString{String}[]
+            if cur == len || isnothing(cur)
+                return Vector{UInt8}[]
             end
         end
         start = nextind(fi, cur)
         cur = detecteol(fi, cur)
-        if cur == len || cur === nothing
-            return SubString{String}[String(fi[start:lastindex(fi)])]
+        if cur == len || isnothing(cur)
+            return [@inbounds fi[start:lastindex(fi)]]
         end
     else
         start = firstindex(fi)
         @warn "Ignoring skip value: $skip"
     end
 
-    nlines === _INT_MAX && (return split(String(fi[start:lastindex(fi)]), _SPLT, keepempty = false))
-    nlines == 1 && (return SubString{String}[String(fi[start:prevind(fi, cur)])])
+    nlines == 1 && (return [@inbounds fi[start:prevind(fi, cur)]])
 
+    append!(splits, [start, cur])
     if cur < len 
-        for _ in 2:nlines
+        for index in 2:nlines
             cur = detecteol(fi, cur)
-            if cur == len || cur === nothing
-                return split(String(fi[start:lastindex(fi)]), _SPLT, keepempty = false)
+            isnothing(cur) ? push!(splits, len) : push!(splits, cur)
+            if cur == len || isnothing(cur)
+                return splitfi(fi, splits)
             end #if 
         end #for 
     end #if 
-    out = split(String(fi[start:prevind(fi, cur)]), _SPLT, keepempty = false)
-    return out
+    return splitfi(fi, splits)
 end
 
 # DF helpers
