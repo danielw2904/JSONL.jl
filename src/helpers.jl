@@ -3,6 +3,7 @@ const _EOL = UInt8('}')
 const _BOL = UInt8('{')
 const _ESC = UInt8('\\') 
 const _INT_MAX = typemax(Int)
+const _SPLT = Sys.iswindows() ? "\r\n" : '\n'
 
 function getfile(file, nlines, skip, usemmap)
     if usemmap
@@ -18,8 +19,7 @@ end
 
 function readstr(file)
     fi = read(file);
-    out = split(String(fi), '\n', keepempty = false);
-    println(out)
+    out = split(String(fi), _SPLT, keepempty = false);
     return out
 end
 
@@ -59,7 +59,7 @@ function mmapstr(file, nlines::Int, skip::Int)
         @warn "Ignoring skip value: $skip"
     end
 
-    nlines === _INT_MAX && (return split(String(fi[start:lastindex(fi)]), '\n', keepempty = false))
+    nlines === _INT_MAX && (return split(String(fi[start:lastindex(fi)]), _SPLT, keepempty = false))
     nlines == 1 && (return SubString{String}[String(fi[start:prevind(fi, cur)])])
 
     if cur < len 
@@ -67,11 +67,11 @@ function mmapstr(file, nlines::Int, skip::Int)
             cur = detecteol(fi, cur)
             # cur = findnext(isequal(_LSEP), fi, nextind(fi, cur))
             if cur == len || cur === nothing
-                return split(String(fi[start:lastindex(fi)]), '\n', keepempty = false)
+                return split(String(fi[start:lastindex(fi)]), _SPLT, keepempty = false)
             end #if 
         end #for 
     end #if 
-    out = split(String(fi[start:prevind(fi, cur)]), '\n', keepempty = false)
+    out = split(String(fi[start:prevind(fi, cur)]), _SPLT, keepempty = false)
     return out
 end
 
