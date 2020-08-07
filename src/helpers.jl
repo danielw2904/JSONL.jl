@@ -8,7 +8,7 @@ const _SPLT = Sys.iswindows() ? "\r\n" : '\n'
 # Detect space in UInt8
 import Base: isspace
 @inline isspace(i::UInt8) = 
-    i == 0x20 || 0x09 <= i <= 0x0d || i == 0x85 
+    i == 0x20 || 0x09 <= i <= 0x0d || i == 0x85 || i == 0xa0
 
 # Choose loading method
 function getfile(file, nlines, skip, usemmap)
