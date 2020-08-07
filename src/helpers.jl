@@ -5,6 +5,12 @@ const _ESC = UInt8('\\')
 const _INT_MAX = typemax(Int)
 const _SPLT = Sys.iswindows() ? "\r\n" : '\n'
 
+# Detect space in UInt8
+import Base: isspace
+@inline isspace(i::UInt8) = 
+    i == 0x20 || 0x09 <= i <= 0x0d || i == 0x85 
+
+# Choose loading method
 function getfile(file, nlines, skip, usemmap)
     if usemmap
         nlines === nothing && (nlines = _INT_MAX)
@@ -17,17 +23,35 @@ function getfile(file, nlines, skip, usemmap)
     return ff
 end
 
+# Read everything into ram
 function readstr(file)
     fi = read(file);
     out = split(String(fi), _SPLT, keepempty = false);
     return out
 end
 
-function detecteol(fi, cur)
-    cur = findnext(isequal(_EOL), fi, nextind(fi, cur))
-    return findnext(isequal(_LSEP), fi, cur)
+# Mmap helpers
+function checkeol(fi, cur)
+    while isspace(fi[prevind(fi, cur)])
+        cur = prevind(fi, cur)
+    end
+    return fi[prevind(fi, cur)] == _EOL
 end
 
+function detecteol(fi, cur)
+    cur = findnext(isequal(_LSEP), fi, nextind(fi, cur))
+    if cur === nothing
+        return cur
+    end
+    iseol = checkeol(fi, cur)
+    if !iseol
+        detecteol(fi, cur)
+    else
+        return cur
+    end
+end
+
+# Mmap main
 function mmapstr(file, nlines::Int, skip::Int)
     @assert nlines > 0 "nlines must be positive"
     fi = Mmap.mmap(file);
@@ -65,7 +89,6 @@ function mmapstr(file, nlines::Int, skip::Int)
     if cur < len 
         for _ in 2:nlines
             cur = detecteol(fi, cur)
-            # cur = findnext(isequal(_LSEP), fi, nextind(fi, cur))
             if cur == len || cur === nothing
                 return split(String(fi[start:lastindex(fi)]), _SPLT, keepempty = false)
             end #if 
@@ -75,6 +98,7 @@ function mmapstr(file, nlines::Int, skip::Int)
     return out
 end
 
+# DF helpers
 function makedf(coliter, names)
     df = DataFrame()
     for (i, col) in enumerate(coliter)

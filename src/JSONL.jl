@@ -22,7 +22,6 @@ Read (parts of) a JSONLines file.
 """
 function readfile(file; promotecols::Bool = false, nrows = nothing, skip = nothing, usemmap::Bool = (nrows !== nothing || skip !== nothing))
     ff = getfile(file, nrows, skip, usemmap)
-    Sys.iswindows() && filter!(!isequal("\r"), ff)
     length(ff) == 0 && return DataFrame()
     rows::Array{LazyJSON.Object{Nothing, String} ,1} = LazyJSON.value.(ff)
     colnames::Vector{String} = String.(keys(first(rows)))
