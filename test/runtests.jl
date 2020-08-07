@@ -19,7 +19,7 @@ oneline = readfile("testfiles/oneline.jsonl")
 oneline_plus = readfile("testfiles/oneline_plus.jsonl")
 
 escaped = readfile("testfiles/escapedeol.jsonl")
-
+println(escaped)
 @testset "Read" begin
     @test full_web.name == ["Gilbert", "Alexa", "May", "Deloise"]
     @test full_web.wins[1] == [["straight", "7♣"], ["one pair", "10♥"]]
