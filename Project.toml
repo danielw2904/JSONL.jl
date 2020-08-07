@@ -1,0 +1,13 @@
+name = "JSONL"
+uuid = "24c2b838-1c8b-4567-aca0-d45e60436bb9"
+authors = ["Daniel Winkler <danielw2904@disroot.org> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.3"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
