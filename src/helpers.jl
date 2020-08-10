@@ -113,28 +113,3 @@ function mmapstr(file, nlines::Int, skip::Int)
     end #if 
     return splitfi(fi, splits)
 end
-
-# DF helpers
-function makedf(coliter, names)
-    df = DataFrame()
-    for (i, col) in enumerate(coliter)
-        df[!, names[i]] = col
-    end
-    return df
-end
-
-function colpromote!(df)
-    numcols =  findall(col -> isa(col, Array{<:Number}), eachcol(df))
-    strcols = findall(col -> isa(col, Array{<:AbstractString}), eachcol(df))
-    for numcol in numcols
-        df[!, numcol] = convert.(Float64, df[!, numcol])::Array{Float64,1}
-        try
-            df[!, numcol] = convert.(Int64, df[!, numcol])::Array{Int64, 1}
-        catch
-        end
-    end
-    for strcol in strcols
-        df[!, strcol] = convert.(String, df[!, strcol])::Array{String,1}
-    end
-    return nothing
-end

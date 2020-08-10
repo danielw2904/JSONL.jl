@@ -1,6 +1,5 @@
 module JSONL
 
-using DataFrames
 import JSON3, 
     Mmap
 
@@ -25,9 +24,9 @@ function readfile(file; structtype = nothing, promotecols::Bool = false, nrows =
     ff = getfile(file, nrows, skip, usemmap)
     length(ff) == 0 && return JSON3.Object[]
     if isnothing(structtype)
-        rows = JSON3.read.(strip.(String.(ff)))
+        rows = JSON3.read.(lstrip.(String.(ff)))
     else
-        rows = JSON3.read.(strip.(String.(ff)), structtype)
+        rows = JSON3.read.(lstrip.(String.(ff)), structtype)
     end
     return rows
 end
