@@ -5,7 +5,7 @@ version = "1.0.1"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-LazyJSON = "fc18253b-5e1b-504c-a4a2-9ece4944c004"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 Mmap = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [compat]

@@ -1,7 +1,7 @@
 module JSONL
 
 using DataFrames
-import LazyJSON,
+import JSON3,
     Mmap
 
 export readfile
@@ -23,7 +23,7 @@ Read (parts of) a JSONLines file.
 function readfile(file; promotecols::Bool = false, nrows = nothing, skip = nothing, usemmap::Bool = (nrows !== nothing || skip !== nothing))
     ff = getfile(file, nrows, skip, usemmap)
     length(ff) == 0 && return DataFrame()
-    rows::Array{LazyJSON.Object{Nothing, String} ,1} = LazyJSON.value.(ff)
+    rows::Array{JSON3.Object,1} = JSON3.read.(strip.(String.(ff)))
     colnames::Vector{String} = String.(keys(first(rows)))
     cols = ([row[col] for row in rows] for col in colnames)
     df = makedf(cols, colnames)
