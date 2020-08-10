@@ -1,24 +1,24 @@
 using JSONL
 using Test, DataFrames, RDatasets
 
-full_web = readfile("testfiles/jsonlwebsite.jsonl")
+full_web = readfile("testfiles/jsonlwebsite.jsonl") |> DataFrame;
 nrow_fw = nrow(full_web)
 
 mtcars = dataset("datasets", "mtcars")
-full_mtcars = readfile("testfiles/mtcars.jsonl", promotecols = true);
+full_mtcars = readfile("testfiles/mtcars.jsonl", promotecols = true) |> DataFrame;
 # Fix R export differences
 rename!(full_mtcars, :_row => :model);
 rename!(full_mtcars, names(full_mtcars) .=> lowercase.(names(full_mtcars)))
 rename!(mtcars, names(mtcars) .=> lowercase.(names(mtcars)))
 
 # Read without promotion
-noprom_mtcars = readfile("testfiles/mtcars.jsonl")
+noprom_mtcars = readfile("testfiles/mtcars.jsonl") |> DataFrame;
 nrow_mt = nrow(mtcars)
 
-oneline = readfile("testfiles/oneline.jsonl")
-oneline_plus = readfile("testfiles/oneline_plus.jsonl")
+oneline = readfile("testfiles/oneline.jsonl")|> DataFrame;
+oneline_plus = readfile("testfiles/oneline_plus.jsonl")|> DataFrame;
 
-escaped = readfile("testfiles/escapedeol.jsonl")
+escaped = readfile("testfiles/escapedeol.jsonl")|> DataFrame;
 
 @testset "Read" begin
     @test full_web.name == ["Gilbert", "Alexa", "May", "Deloise"]
@@ -39,84 +39,84 @@ end
 
 @testset "Mmap Full File" begin
 # full file equal
-    @test readfile("testfiles/jsonlwebsite.jsonl", usemmap = true) == full_web
-    @test readfile("testfiles/mtcars.jsonl", usemmap = true) == noprom_mtcars
-    @test readfile("testfiles/oneline.jsonl", usemmap = true) == oneline
-    @test readfile("testfiles/oneline_plus.jsonl", usemmap = true) == oneline_plus
-    @test readfile("testfiles/escapedeol.jsonl", usemmap = true) == escaped
+    @test readfile("testfiles/jsonlwebsite.jsonl", usemmap = true) |> DataFrame == full_web
+    @test readfile("testfiles/mtcars.jsonl", usemmap = true) |> DataFrame == noprom_mtcars
+    @test readfile("testfiles/oneline.jsonl", usemmap = true) |> DataFrame== oneline
+    @test readfile("testfiles/oneline_plus.jsonl", usemmap = true)  |> DataFrame == oneline_plus
+    @test readfile("testfiles/escapedeol.jsonl", usemmap = true)  |> DataFrame == escaped
 end
 
 @testset "skip & nrows" begin
 # skip + nrows = nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = 1, nrows = nrow_fw-1) == full_web[2:end, :]
-    @test readfile("testfiles/mtcars.jsonl", skip = 2, nrows = nrow_mt-2) == noprom_mtcars[3:end, :]
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = 1, nrows = nrow_fw-1)  |> DataFrame == full_web[2:end, :]
+    @test readfile("testfiles/mtcars.jsonl", skip = 2, nrows = nrow_mt-2)  |> DataFrame == noprom_mtcars[3:end, :]
 
 # skip + nrows < nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = 1, nrows = 2) == full_web[2:3, :]
-    @test readfile("testfiles/mtcars.jsonl", skip = 2, nrows = 2) == noprom_mtcars[3:4, :]
-    @test readfile("testfiles/escapedeol.jsonl", skip = 2, nrows = 1) == escaped[3:3, :]
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = 1, nrows = 2)  |> DataFrame == full_web[2:3, :]
+    @test readfile("testfiles/mtcars.jsonl", skip = 2, nrows = 2)  |> DataFrame == noprom_mtcars[3:4, :]
+    @test readfile("testfiles/escapedeol.jsonl", skip = 2, nrows = 1)  |> DataFrame == escaped[3:3, :]
 
 # skip + nrows > nrow(file) (through nrow)
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = 1, nrows = nrow_fw) == full_web[2:end, :]
-    @test readfile("testfiles/mtcars.jsonl", skip = 12, nrows = nrow_mt + 10) == noprom_mtcars[13:end, :]
-    @test readfile("testfiles/oneline.jsonl", skip = 0, nrows = 5) == oneline
-    @test readfile("testfiles/oneline_plus.jsonl", skip = 0, nrows = 2) == oneline_plus
-    @test readfile("testfiles/escapedeol.jsonl", skip = 2, nrows = 10) == escaped[3:end, :]
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = 1, nrows = nrow_fw)  |> DataFrame == full_web[2:end, :]
+    @test readfile("testfiles/mtcars.jsonl", skip = 12, nrows = nrow_mt + 10)  |> DataFrame == noprom_mtcars[13:end, :]
+    @test readfile("testfiles/oneline.jsonl", skip = 0, nrows = 5)  |> DataFrame == oneline
+    @test readfile("testfiles/oneline_plus.jsonl", skip = 0, nrows = 2)  |> DataFrame == oneline_plus
+    @test readfile("testfiles/escapedeol.jsonl", skip = 2, nrows = 10)  |> DataFrame == escaped[3:end, :]
 
 # skip + nrows > nrow(file) (through skip)
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw+1, nrows = 1) == DataFrame()
-    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt +12, nrows = 120) ==  DataFrame()
-    @test readfile("testfiles/oneline.jsonl", skip = 2, nrows = 10) == DataFrame()
-    @test readfile("testfiles/oneline_plus.jsonl", skip = 2, nrows = 123) == DataFrame()
-    @test readfile("testfiles/escapedeol.jsonl", skip = 5, nrows = 1) == DataFrame()
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw+1, nrows = 1)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt +12, nrows = 120)  |> DataFrame ==  DataFrame()
+    @test readfile("testfiles/oneline.jsonl", skip = 2, nrows = 10)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/oneline_plus.jsonl", skip = 2, nrows = 123)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/escapedeol.jsonl", skip = 5, nrows = 1)  |> DataFrame == DataFrame()
 
 # skip = nrow(file) + nrows > 0
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw, nrows = 10) == DataFrame()
-    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt, nrows = 1) == DataFrame()
-    @test readfile("testfiles/oneline.jsonl", skip = 1, nrows = 12) == DataFrame()
-    @test readfile("testfiles/oneline_plus.jsonl", skip = 1, nrows = 1) == DataFrame()
-    @test readfile("testfiles/escapedeol.jsonl", skip = 4, nrows = 1) == DataFrame()
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw, nrows = 10)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt, nrows = 1)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/oneline.jsonl", skip = 1, nrows = 12) |> DataFrame == DataFrame()
+    @test readfile("testfiles/oneline_plus.jsonl", skip = 1, nrows = 1) |> DataFrame == DataFrame()
+    @test readfile("testfiles/escapedeol.jsonl", skip = 4, nrows = 1) |> DataFrame == DataFrame()
 end
 
 @testset "skip" begin
 # skip = nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw) == DataFrame()
-    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt) == DataFrame()
-    @test readfile("testfiles/oneline.jsonl", skip = 1) == DataFrame()
-    @test readfile("testfiles/oneline_plus.jsonl", skip = 1) == DataFrame()
-    @test readfile("testfiles/escapedeol.jsonl", skip = 4) == DataFrame()
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/oneline.jsonl", skip = 1)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/oneline_plus.jsonl", skip = 1)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/escapedeol.jsonl", skip = 4)  |> DataFrame == DataFrame()
 
 # skip > nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw + 1) == DataFrame()
-    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt + 42) == DataFrame()
-    @test readfile("testfiles/mtcars.jsonl", skip = typemax(Int)) == DataFrame()
-    @test readfile("testfiles/oneline.jsonl", skip = 2) == DataFrame()
-    @test readfile("testfiles/oneline_plus.jsonl", skip = 2) == DataFrame()
-    @test readfile("testfiles/escapedeol.jsonl", skip = 5) == DataFrame()
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw + 1)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt + 42) |> DataFrame  == DataFrame()
+    @test readfile("testfiles/mtcars.jsonl", skip = typemax(Int))  |> DataFrame == DataFrame()
+    @test readfile("testfiles/oneline.jsonl", skip = 2)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/oneline_plus.jsonl", skip = 2)  |> DataFrame == DataFrame()
+    @test readfile("testfiles/escapedeol.jsonl", skip = 5) |> DataFrame  == DataFrame()
     
 # skip < nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw - 1) == full_web[end:end, :]
-    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt - 12) == noprom_mtcars[(end-11):end, :]
-    @test readfile("testfiles/escapedeol.jsonl", skip = 2) == escaped[3:end, :]
+    @test readfile("testfiles/jsonlwebsite.jsonl", skip = nrow_fw - 1)  |> DataFrame == full_web[end:end, :]
+    @test readfile("testfiles/mtcars.jsonl", skip = nrow_mt - 12)  |> DataFrame == noprom_mtcars[(end-11):end, :]
+    @test readfile("testfiles/escapedeol.jsonl", skip = 2)  |> DataFrame == escaped[3:end, :]
 end
 
 @testset "nrows" begin
 # nrows < nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", nrows = 2) == full_web[begin:2, :]
-    @test readfile("testfiles/mtcars.jsonl", nrows = 12) == noprom_mtcars[begin:12, :]
-    @test readfile("testfiles/escapedeol.jsonl", nrows = 3) == escaped[begin:3, :]
+    @test readfile("testfiles/jsonlwebsite.jsonl", nrows = 2)  |> DataFrame == full_web[begin:2, :]
+    @test readfile("testfiles/mtcars.jsonl", nrows = 12)  |> DataFrame == noprom_mtcars[begin:12, :]
+    @test readfile("testfiles/escapedeol.jsonl", nrows = 3)  |> DataFrame == escaped[begin:3, :]
 
 # nrows = nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", nrows = nrow_fw) == full_web
-    @test readfile("testfiles/mtcars.jsonl", nrows = nrow_mt) == noprom_mtcars
-    @test readfile("testfiles/oneline.jsonl", nrows = 1) == oneline
-    @test readfile("testfiles/oneline_plus.jsonl", nrows = 1) == oneline_plus
-    @test readfile("testfiles/escapedeol.jsonl", nrows = 4) == escaped
+    @test readfile("testfiles/jsonlwebsite.jsonl", nrows = nrow_fw)  |> DataFrame == full_web
+    @test readfile("testfiles/mtcars.jsonl", nrows = nrow_mt)  |> DataFrame == noprom_mtcars
+    @test readfile("testfiles/oneline.jsonl", nrows = 1)  |> DataFrame == oneline
+    @test readfile("testfiles/oneline_plus.jsonl", nrows = 1)  |> DataFrame == oneline_plus
+    @test readfile("testfiles/escapedeol.jsonl", nrows = 4)  |> DataFrame == escaped
 
 # nrows > nrow(file)
-    @test readfile("testfiles/jsonlwebsite.jsonl", nrows = nrow_fw+1) == full_web
-    @test readfile("testfiles/mtcars.jsonl", nrows = nrow_mt+100) == noprom_mtcars
-    @test readfile("testfiles/oneline.jsonl", nrows = 2) == oneline
-    @test readfile("testfiles/oneline_plus.jsonl", nrows = 2) == oneline_plus
-    @test readfile("testfiles/escapedeol.jsonl", nrows = 5) == escaped
+    @test readfile("testfiles/jsonlwebsite.jsonl", nrows = nrow_fw+1)  |> DataFrame == full_web
+    @test readfile("testfiles/mtcars.jsonl", nrows = nrow_mt+100)  |> DataFrame == noprom_mtcars
+    @test readfile("testfiles/oneline.jsonl", nrows = 2)  |> DataFrame == oneline
+    @test readfile("testfiles/oneline_plus.jsonl", nrows = 2)  |> DataFrame == oneline_plus
+    @test readfile("testfiles/escapedeol.jsonl", nrows = 5)  |> DataFrame == escaped
 end
