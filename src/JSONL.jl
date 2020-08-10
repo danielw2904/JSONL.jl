@@ -14,7 +14,7 @@ Read (parts of) a JSONLines file.
 
 * `file`: Path to JSONLines file
 * Keyword Arguments:
-    * `structtype = nothing`
+    * `structtype = nothing`: StructType passed to JSON3.read for each row of the file
     * `promotecols::Bool = false`: Promote columns to Float64, Int64 or String
     * `nrows = nothing`: Number of rows to load
     * `skip = nothing`: Number of rows to skip before loading
