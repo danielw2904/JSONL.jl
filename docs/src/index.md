@@ -17,7 +17,7 @@ This package is not yet registered but you can add it from GitHub:
 ```julia-repl
 (@v1.5) pkg> add https://github.com/danielw2904/JSONL.jl
 ```
-# Function
+# Functions
 
 ```@index
 ```
