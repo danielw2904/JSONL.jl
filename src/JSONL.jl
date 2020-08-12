@@ -32,8 +32,6 @@ function readfile(file; structtype = nothing, promotecols::Bool = false, nrows =
     return rows
 end
 
-end
-
 """
     writefile(file, data, mode = "w")
 
@@ -53,3 +51,5 @@ function writefile(file, data, mode = "w")
 	end
 	close(fi)
 end
+
+end # Module 
