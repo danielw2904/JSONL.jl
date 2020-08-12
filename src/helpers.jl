@@ -7,6 +7,7 @@ import Base: isspace
 @inline isspace(i::UInt8) = 
     i == 0x20 || 0x09 <= i <= 0x0d || i == 0x85 || i == 0xa0
 
+## Reading
 # Choose loading method
 function getfile(file, nlines, skip, usemmap)
     if usemmap
@@ -112,4 +113,11 @@ function mmapstr(file, nlines::Int, skip::Int)
         end #for 
     end #if 
     return splitfi(fi, splits)
+end
+
+## Writing
+# Write single row
+function writerow(io::IO,row)
+	JSON3.write(io, row)
+	write(io, '\n')
 end

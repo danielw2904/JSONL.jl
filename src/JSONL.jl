@@ -3,7 +3,8 @@ module JSONL
 import JSON3, 
     Mmap
 
-export readfile
+export readfile,
+    writefile
 
 include("helpers.jl")
 
@@ -31,4 +32,24 @@ function readfile(file; structtype = nothing, promotecols::Bool = false, nrows =
     return rows
 end
 
+end
+
+"""
+    writefile(file, data, mode = "w")
+
+Write `data` to `file` in the JSONLines format.
+
+* `file`: Path to target JSONLines file
+* `data`: `Tables.jl` compatible data source
+* `mode = w`: Mode to open the file in [see I/O and Network](https://docs.julialang.org/en/v1/base/io-network/)
+"""
+function writefile(file, data, mode = "w")
+	if !Tables.istable(data)
+		throw(ArgumentError("data needs to be compatible with the Tables interface"))
+	end
+	fi = open(file, mode)
+	for row in Tables.rowtable(data)
+		writerow(fi, row)
+	end
+	close(fi)
 end
