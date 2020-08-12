@@ -25,3 +25,7 @@ This package is not yet registered but you can add it from GitHub:
 ```@autodocs
 Modules = [JSONL]
 ```
+
+```@docs
+writefile
+```
