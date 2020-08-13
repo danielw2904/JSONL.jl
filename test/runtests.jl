@@ -5,7 +5,7 @@ full_web = readfile("testfiles/jsonlwebsite.jsonl") |> DataFrame;
 nrow_fw = nrow(full_web)
 
 mtcars = dataset("datasets", "mtcars")
-full_mtcars = readfile("testfiles/mtcars.jsonl", promotecols = true) |> DataFrame;
+full_mtcars = readfile("testfiles/mtcars.jsonl") |> DataFrame;
 # Fix R export differences
 rename!(full_mtcars, :_row => :model);
 rename!(full_mtcars, names(full_mtcars) .=> lowercase.(names(full_mtcars)))
@@ -119,4 +119,17 @@ end
     @test readfile("testfiles/oneline.jsonl", nrows = 2)  |> DataFrame == oneline
     @test readfile("testfiles/oneline_plus.jsonl", nrows = 2)  |> DataFrame == oneline_plus
     @test readfile("testfiles/escapedeol.jsonl", nrows = 5)  |> DataFrame == escaped
+end
+
+writefile("full_web.jsonl", full_web)
+writefile("full_mtcars.jsonl", full_mtcars)
+writefile("oneline2.jsonl", oneline)
+writefile("oneline_plus2.jsonl", oneline_plus)
+writefile("escaped2.jsonl", escaped)
+@testset "write" begin
+    @test readfile("full_web.jsonl") |> DataFrame == full_web
+    @test readfile("full_mtcars.jsonl") |> DataFrame == full_mtcars
+    @test readfile("oneline2.jsonl") |> DataFrame == oneline
+    @test readfile("oneline_plus2.jsonl") |> DataFrame == oneline_plus
+    @test readfile("escaped2.jsonl") |> DataFrame == escaped
 end
